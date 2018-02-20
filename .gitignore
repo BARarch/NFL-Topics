@@ -8,3 +8,5 @@ New-Checkpoint-Test.ipynb
 /.ipynb_checkpoints/*
 /.ipynb_checkpoints
 /__pycache__
+NFL-Parse-2-0/config.py
+NFL-Parse-2-0/client_secret.json
