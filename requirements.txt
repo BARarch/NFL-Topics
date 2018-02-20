@@ -46,6 +46,7 @@ pyasn1-modules==0.2.1
 Pygments==2.2.0
 pyLDAvis==2.1.1
 pytest==3.3.2
+python-crontab==2.2.8
 python-dateutil==2.6.1
 pytz==2017.3
 pyzmq==16.0.3
