@@ -10,3 +10,4 @@ New-Checkpoint-Test.ipynb
 /__pycache__
 NFL-Parse-2-0/config.py
 NFL-Parse-2-0/client_secret.json
+NFL-Parse-2-0/__pycache__/
