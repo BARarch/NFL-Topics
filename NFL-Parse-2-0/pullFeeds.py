@@ -67,6 +67,62 @@ def writeLinkData(dataColumns):
 
     return result
 
+
+def get_runs():
+    """Google Sheets API Code.
+    Pulls urls for all NFL Team RSS Feeds
+    https://docs.google.com/spreadsheets/d/1XiOZWw3S__3l20Fo0LzpMmnro9NYDulJtMko09KsZJQ/edit#gid=0
+    """
+    credentials = get_credentials()
+    http = credentials.authorize(mgs.httplib2.Http())
+    discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?'
+                    'version=v4')
+    service = mgs.discovery.build('sheets', 'v4', http=http,
+                              discoveryServiceUrl=discoveryUrl)
+
+    #specify sheetID and range
+    spreadsheetId = '1XiOZWw3S__3l20Fo0LzpMmnro9NYDulJtMko09KsZJQ'
+    rangeName = 'RUNS!A2:E'
+    result = service.spreadsheets().values().get(
+        spreadsheetId=spreadsheetId, range=rangeName).execute()
+    values = result.get('values', [])
+
+    if not values:
+        print('No data found.')
+    else:
+        print('Done')
+
+    return values
+
+def write_run_row(rowNum, runInfo):
+    """Google Sheets API Code.
+
+    Writes all team news link data from RSS feed to the NFL Team Articles speadsheet.
+    https://docs.google.com/spreadsheets/d/1XiOZWw3S__3l20Fo0LzpMmnro9NYDulJtMko09KsZJQ/edit#gid=0
+    """
+    credentials = get_credentials()
+    http = credentials.authorize(mgs.httplib2.Http())
+    discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?'
+                    'version=v4')
+    service = mgs.discovery.build('sheets', 'v4', http=http,
+                              discoveryServiceUrl=discoveryUrl)
+
+    spreadsheet_id = '1XiOZWw3S__3l20Fo0LzpMmnro9NYDulJtMko09KsZJQ'
+    value_input_option = 'RAW'
+    rangeName = 'RUNS!A' + str(rowNum)
+    values = runInfo
+    body = {
+          'values': values
+    }
+    
+    result = service.spreadsheets().values().update(spreadsheetId=spreadsheet_id, range=rangeName,
+                                                    valueInputOption=value_input_option, body=body).execute()
+
+    return result
+
+
+
+
 def sheetColumns(record):
     if record['new']:
         return [record['pubDate'], record['team'], record['title'], record['type'], record['link'], record['discription'], record['creator'], 'new']
@@ -204,7 +260,7 @@ def pushRecord2(feeds, cursor, conn):
     conn.commit()
     print(str(pushedElms) + " new records intserted into nfl-team-articles")
     
-    return lastId
+    return pushedElms
 
 def pushCorpus(links):
     '''
@@ -254,7 +310,7 @@ for feedRow in feeds:
 
 # Step 3 Sort the Data by pubData push to Postgress and DataFrame the result    
 dataSorts = sorted(data, key=lambda k: getTime(k['pubDate']), reverse=True)
-last = pushRecord2(dataSorts, cursor, conn)
+noNewArticles = pushRecord2(dataSorts, cursor, conn)
 
 cursor.close()
 conn.close()
@@ -279,4 +335,15 @@ size = cp.dbSize()
 print ("Collection Size:" + '\t' + size[0])
 print ("Team Corpus:" + '\t' + '\t'+ size[1])
 
- 
+
+# Step 6 Send Completion Report
+row = len(get_runs()) + 2
+
+completionTime = datetime.now().strftime("%a %b %d, %Y  %H:%M")
+noArticles = noNewArticles
+collectionSize = size[0]
+teamCorpusSize = size[1]
+
+write_run_row(row, [[completionTime, '', noArticles, collectionSize, teamCorpusSize]])
+
+

@@ -12,3 +12,4 @@ NFL-Parse-2-0/config.py
 NFL-Parse-2-0/client_secret.json
 NFL-Parse-2-0/__pycache__/
 NFL-Parse-2-0/cron-testing/
+NFL-Parse-2-0/pullfeeds.bat
