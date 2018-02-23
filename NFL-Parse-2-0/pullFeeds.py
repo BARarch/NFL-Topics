@@ -9,6 +9,7 @@ import psycopg2
 import config as config
 from googleapiclient.errors import HttpError
 import corpus as cp
+from quivtimer import ticToc
 
 #import httplib2
 #from apiclient import discovery
@@ -292,10 +293,12 @@ def pushCorpus(links):
 
 
 
-# Step 0 Initialize Models    
+# Step 0 Initialize Models
+tic = ticToc()
 get_credentials = mgs.modelInit()
 conn = config.connect()
 cursor = conn.cursor()
+
 
 # Step 1 Load Feed Information
 feeds = getFeeds()
@@ -343,7 +346,9 @@ completionTime = datetime.now().strftime("%a %b %d, %Y  %H:%M")
 noArticles = noNewArticles
 collectionSize = size[0]
 teamCorpusSize = size[1]
+duration = tic.toc()
+print('Completed in ' + duration)
 
-write_run_row(row, [[completionTime, '', noArticles, collectionSize, teamCorpusSize]])
+write_run_row(row, [[completionTime, duration, noArticles, collectionSize, teamCorpusSize]])
 
 
