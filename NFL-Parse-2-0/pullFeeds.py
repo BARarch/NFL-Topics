@@ -69,6 +69,8 @@ def writeLinkData(dataColumns):
     return result
 
 
+
+
 def get_runs():
     """Google Sheets API Code.
     Pulls urls for all NFL Team RSS Feeds
@@ -112,6 +114,60 @@ def write_run_row(rowNum, runInfo):
     value_input_option = 'RAW'
     rangeName = 'RUNS!A' + str(rowNum)
     values = runInfo
+    body = {
+          'values': values
+    }
+    
+    result = service.spreadsheets().values().update(spreadsheetId=spreadsheet_id, range=rangeName,
+                                                    valueInputOption=value_input_option, body=body).execute()
+
+    return result
+
+
+
+def get_errors():
+    """Google Sheets API Code.
+    Pulls urls for all NFL Team RSS Feeds
+    https://docs.google.com/spreadsheets/d/1XiOZWw3S__3l20Fo0LzpMmnro9NYDulJtMko09KsZJQ/edit#gid=0
+    """
+    credentials = get_credentials()
+    http = credentials.authorize(mgs.httplib2.Http())
+    discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?'
+                    'version=v4')
+    service = mgs.discovery.build('sheets', 'v4', http=http,
+                              discoveryServiceUrl=discoveryUrl)
+
+    #specify sheetID and range
+    spreadsheetId = '1XiOZWw3S__3l20Fo0LzpMmnro9NYDulJtMko09KsZJQ'
+    rangeName = 'ERROR!A2:E'
+    result = service.spreadsheets().values().get(
+        spreadsheetId=spreadsheetId, range=rangeName).execute()
+    values = result.get('values', [])
+
+    if not values:
+        print('No data found.')
+    else:
+        print('Done')
+
+    return values
+
+def write_error_row(rowNum, errInfo):
+    """Google Sheets API Code.
+
+    Writes all team news link data from RSS feed to the NFL Team Articles speadsheet.
+    https://docs.google.com/spreadsheets/d/1XiOZWw3S__3l20Fo0LzpMmnro9NYDulJtMko09KsZJQ/edit#gid=0
+    """
+    credentials = get_credentials()
+    http = credentials.authorize(mgs.httplib2.Http())
+    discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?'
+                    'version=v4')
+    service = mgs.discovery.build('sheets', 'v4', http=http,
+                              discoveryServiceUrl=discoveryUrl)
+
+    spreadsheet_id = '1XiOZWw3S__3l20Fo0LzpMmnro9NYDulJtMko09KsZJQ'
+    value_input_option = 'RAW'
+    rangeName = 'ERROR!A' + str(rowNum)
+    values = errInfo
     body = {
           'values': values
     }
@@ -292,63 +348,96 @@ def pushCorpus(links):
     return pushedElms
 
 
-
-# Step 0 Initialize Models
-tic = ticToc()
-get_credentials = mgs.modelInit()
-conn = config.connect()
-cursor = conn.cursor()
-
-
-# Step 1 Load Feed Information
-feeds = getFeeds()
-
-# Step 2 Pull all feeds from RSS Lins Using feedFrame()
-data = []
-for feedRow in feeds:
-    if feedRow[3] == 'null':
-        continue
-    data.extend(feedFrame2(feedRow, cursor))
-    #print('team: '+ feedRow[1] + ' ' + feedRow[0] )
-
-# Step 3 Sort the Data by pubData push to Postgress and DataFrame the result    
-dataSorts = sorted(data, key=lambda k: getTime(k['pubDate']), reverse=True)
-noNewArticles = pushRecord2(dataSorts, cursor, conn)
-
-cursor.close()
-conn.close()
-
-df = pd.DataFrame(dataSorts)
-
-# Step 4 Write the Result to the NFL Feeds Speadsheet.
-try:
-    writeLinkData([sheetColumns(record) for record in dataSorts])
-except HttpError:
-    print("Large Discriptions")
-    writeLinkData([sheetColumns2ndAttempt(record) for record in dataSorts])
-    print('There were large discriptions in some of the cells which did cause some problems, upload completed with them removed from the table write')
-finally:
-    print('Complete')
-
-# Step 5 Update Corpus Table with new news article Data
-cp.corpusNewArticles() 
-
-size = cp.dbSize() 
-
-print ("Collection Size:" + '\t' + size[0])
-print ("Team Corpus:" + '\t' + '\t'+ size[1])
+if __name__ == '__main__':
+    noExceptions = 0
+    try:
+        # Step 0 Initialize Models
+        tic = ticToc()
+        get_credentials = mgs.modelInit()
+        conn = config.connect()
+        cursor = conn.cursor()
 
 
-# Step 6 Send Completion Report
-row = len(get_runs()) + 2
+        # Step 1 Load Feed Information
+        feeds = getFeeds()
 
-completionTime = datetime.now().strftime("%a %b %d, %Y  %H:%M")
-noArticles = noNewArticles
-collectionSize = size[0]
-teamCorpusSize = size[1]
-duration = tic.toc()
-print('Completed in ' + duration)
+        # Step 2 Pull all feeds from RSS Lins Using feedFrame()
+        data = []
+        for feedRow in feeds:
+            if feedRow[3] == 'null':
+                continue
+            data.extend(feedFrame2(feedRow, cursor))
+            #print('team: '+ feedRow[1] + ' ' + feedRow[0] )
 
-write_run_row(row, [[completionTime, duration, noArticles, collectionSize, teamCorpusSize]])
+        # Step 3 Sort the Data by pubData push to Postgress and DataFrame the result    
+        dataSorts = sorted(data, key=lambda k: getTime(k['pubDate']), reverse=True)
+        noNewArticles = pushRecord2(dataSorts, cursor, conn)
+
+        cursor.close()
+        conn.close()
+
+        df = pd.DataFrame(dataSorts)
+
+        # Step 4 Write the Result to the NFL Feeds Speadsheet.
+        try:
+            writeLinkData([sheetColumns(record) for record in dataSorts])
+        except HttpError:
+            print("Large Discriptions")
+            writeLinkData([sheetColumns2ndAttempt(record) for record in dataSorts])
+            print('There were large discriptions in some of the cells which did cause some problems, upload completed with them removed from the table write')
+            noExceptions += 1
+            
+            # Send Error Report
+            errRow = len(get_errors()) + 2
+            write_error_row(errRow, [[datetime.now().strftime("%a %b %d, %Y  %H:%M"),
+                                      'Writing Results to NFL Feeds Step 4',
+                                      'There were large discriptions']])
+            
+        finally:
+            print('Complete')
+
+        # Step 5 Update Corpus Table with new news article Data
+        cp.corpusNewArticles() 
+
+        size = cp.dbSize() 
+
+        print ("Collection Size:" + '\t' + size[0])
+        print ("Team Corpus:" + '\t' + '\t'+ size[1])
+
+
+        # Step 6 Send Completion Report
+        row = len(get_runs()) + 2
+
+        completionTime = datetime.now().strftime("%a %b %d, %Y  %H:%M")
+        noArticles = noNewArticles
+        collectionSize = size[0]
+        teamCorpusSize = size[1]
+        duration = tic.toc()
+        if noExceptions:
+            status = 'Exceptions: {}'.format(noExceptions)
+        else:
+            status = 'Completed'
+            
+        print('Completed in ' + duration)
+        
+    except Exception as e:
+        # Step 6A Send Completion Report
+        row = len(get_runs()) + 2
+        
+        completionTime = datetime.now().strftime("%a %b %d, %Y  %H:%M")
+        noArticles = '--'
+        collectionSize = '--'
+        teamCorpusSize = '--'
+        duration = tic.toc()
+        status = 'Did Not Finnish'
+        print(str(e) + ' in ' + duration)
+        
+        # Step 6B Send Error Report
+        errRow = len(get_errors()) + 2
+        
+        write_error_row(errRow, [[completionTime, 'Master Exception Catch', str(e)]])
+        
+    finally:
+        write_run_row(row, [[completionTime, duration, noArticles, collectionSize, teamCorpusSize, status]])
 
 
