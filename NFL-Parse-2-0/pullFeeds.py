@@ -366,7 +366,10 @@ if __name__ == '__main__':
         for feedRow in feeds:
             if feedRow[3] == 'null':
                 continue
-            data.extend(feedFrame2(feedRow, cursor))
+            try:
+                data.extend(feedFrame2(feedRow, cursor))
+            except Exception as e:
+                print('FeedFrame error with {} {} on row {}: {}'.format(feedRow[1], feedRow[2], feedRow[0], e))
             #print('team: '+ feedRow[1] + ' ' + feedRow[0] )
 
         # Step 3 Sort the Data by pubData push to Postgress and DataFrame the result    
