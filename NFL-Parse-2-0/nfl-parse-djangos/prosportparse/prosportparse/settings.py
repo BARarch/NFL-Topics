@@ -32,6 +32,8 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'mlbparsebot',
+    'nbaparsebot',
+    'plsparsebot',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
