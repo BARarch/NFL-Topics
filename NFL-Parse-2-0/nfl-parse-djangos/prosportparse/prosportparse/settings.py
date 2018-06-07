@@ -34,6 +34,8 @@ INSTALLED_APPS = [
     'mlbparsebot',
     'nbaparsebot',
     'plsparsebot',
+    'develbot',
+    'parsebot',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
