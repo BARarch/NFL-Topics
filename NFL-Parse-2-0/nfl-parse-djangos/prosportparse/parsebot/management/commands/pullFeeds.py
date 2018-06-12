@@ -1,5 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
 from parsebot.models import Article
+from parsebot.parsebot_classes.parseConfig import ParseConfig
+
 
 class Command(BaseCommand):
     help = 'Pulls feeds from in the group assigned to the app'
@@ -10,6 +12,10 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         ## Opening Message
         print('hello world {} says hi'.format(options['arg'][0]))
+        print('Session Started')
+
+        session = ParseConfig('hello', 'world')
+
 
         ## Step 1: Establish Config Object
 
