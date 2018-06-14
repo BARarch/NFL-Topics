@@ -1,4 +1,6 @@
 from django.db import models
+from oauth2client.contrib.django_util.models import CredentialsField
+from oauth2client.contrib.django_util.models import FlowField
 
 # Create your models here.
 
@@ -12,4 +14,12 @@ class Article(models.Model):
 	creator = models.CharField(max_length=120)
 	new = models.BooleanField()
 	visited = models.BooleanField()
+
+class CredetialsModel(models.Model):
+	credential = CredentialsField()
+
+class FlowModel(models.Model):
+	flow = FlowField()
+
+
 

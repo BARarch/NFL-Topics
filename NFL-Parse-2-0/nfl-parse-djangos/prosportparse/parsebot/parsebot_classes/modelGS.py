@@ -67,6 +67,30 @@ def modelInit():
     
     return get_credentials
 
+def try_outer():
+    #rais = modelInit()
+    creds = get_credentials()
+    print('do you have new creds')
+
+    credentials = creds
+    http = credentials.authorize(httplib2.Http())
+    discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?'
+                    'version=v4')
+    service = discovery.build('sheets', 'v4', http=http,
+                              discoveryServiceUrl=discoveryUrl)
+
+    spreadsheet_id = '1lJa1YVucaoDI0DW0VdyaJza8uAmvjGPdL-krRLiaMuc'
+    value_input_option = 'RAW'
+    rangeName = 'RUNS!A' + '3'
+    values = [['Django Said Something']]
+    body = {
+          'values': values
+    }
+    
+    result = service.spreadsheets().values().update(spreadsheetId=spreadsheet_id, range=rangeName,
+                                                        valueInputOption=value_input_option, body=body).execute()
+
+
 if __name__ == "__main__":
     rais = modelInit()
     creds = rais()

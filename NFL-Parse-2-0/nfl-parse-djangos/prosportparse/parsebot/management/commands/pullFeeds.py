@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
 from parsebot.models import Article
 from parsebot.parsebot_classes.parseConfig import ParseConfig
+import parsebot.parsebot_classes.modelGS as mgs
 
 
 class Command(BaseCommand):
@@ -14,7 +15,9 @@ class Command(BaseCommand):
         print('hello world {} says hi'.format(options['arg'][0]))
         print('Session Started')
 
-        session = ParseConfig('hello', 'world')
+        mgs.try_outer()
+
+        print('finished')
 
 
         ## Step 1: Establish Config Object
