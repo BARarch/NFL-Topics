@@ -95,7 +95,8 @@ if __name__ == "__main__":
     rais = modelInit()
     creds = rais()
     print('do you have new creds')
-
+    print(creds)
+    print(creds.invalid)
     credentials = creds
     http = credentials.authorize(httplib2.Http())
     discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?'

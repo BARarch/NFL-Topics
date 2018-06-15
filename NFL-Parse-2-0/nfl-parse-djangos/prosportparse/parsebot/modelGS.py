@@ -7,6 +7,10 @@ from oauth2client import client
 from oauth2client import tools
 from oauth2client.file import Storage
 
+
+from oauth2client.contrib.django_util.storage import DjangoORMStorage
+from oauth2client.client import flow_from_clientsecrets
+
 def get_credentials():
     """Gets valid user credentials from storage.
 
@@ -19,6 +23,9 @@ def get_credentials():
 
     # If modifying these scopes, delete your previously saved credentials
     # at ~/.credentials/sheets.googleapis.com-python-quickstart.json
+    
+    ## OATH 2: Gotta Learn It
+
     SCOPES = 'https://www.googleapis.com/auth/spreadsheets'
     CLIENT_SECRET_FILE = '_client_secret.json'
     APPLICATION_NAME = 'NFL-Parse'
