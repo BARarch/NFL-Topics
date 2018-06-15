@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'plsparsebot',
     'develbot',
     'parsebot',
+    'sheetoutput'
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
