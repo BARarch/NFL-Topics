@@ -15,11 +15,6 @@ class Article(models.Model):
 	new = models.BooleanField()
 	visited = models.BooleanField()
 
-class CredetialsModel(models.Model):
-	credential = CredentialsField()
-
-class FlowModel(models.Model):
-	flow = FlowField()
 
 
 
