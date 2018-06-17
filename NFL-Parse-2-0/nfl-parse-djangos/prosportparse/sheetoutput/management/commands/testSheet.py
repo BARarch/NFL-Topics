@@ -37,5 +37,8 @@ class Command(BaseCommand):
 		if cred is None or credential.invalid == True:
 			print('we have not valid credential stored')
 			print('we are using flow to generate token')
+
+			## If the flow is bad we might have to go to Google developers console
+			## and get a new server to server secret for this django.
 		else:
 			print('Now to authorize credential with HTTPlib2')
