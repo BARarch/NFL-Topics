@@ -130,3 +130,9 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 GOOGLE_OAUTH2_CLIENT_SECRETS_JSON = 'client_secret.json'
+
+GOOGLE_OAUTH2_STORAGE_MODEL = {
+    'model': 'sheetoutput.models.CredentialsModel',
+    'user_property': 'user_id',
+    'credentials_property': 'credential',
+}
