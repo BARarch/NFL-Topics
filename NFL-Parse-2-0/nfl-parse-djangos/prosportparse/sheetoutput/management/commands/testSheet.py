@@ -1,4 +1,4 @@
-from prosportparse import settings
+from django.conf import settings
 
 from django.core.management.base import BaseCommand, CommandError
 from parsebot.models import Article
@@ -20,9 +20,9 @@ class Command(BaseCommand):
 
 		SCOPES = 'https://www.googleapis.com/auth/spreadsheets'
 		CLIENT_SECRET_FILE = settings.GOOGLE_OAUTH2_CLIENT_SECRETS_JSON
-		APPLICATION_NAME = 'NFL-Parse'
+		APPLICATION_NAME = 'ParseBot-SheetOutput'
 
-		flow = flow_from_clientsecrets(CLIENT_SECRET_FILE, scope=SCOPES, redirect_uri='http://localhost:8080/')
+		flow = flow_from_clientsecrets(CLIENT_SECRET_FILE, scope=SCOPES, redirect_uri='http://localhost:8080/oath2callback')
 		print('got flow')
 
 		storage = DjangoORMStorage(	CredetialsModel, 

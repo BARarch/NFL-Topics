@@ -60,7 +60,7 @@ ROOT_URLCONF = 'prosportparse.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(os.path.dirname(__file__), 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -129,7 +129,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-GOOGLE_OAUTH2_CLIENT_SECRETS_JSON = 'client_secret.json'
+GOOGLE_OAUTH2_CLIENT_SECRETS_JSON = 'client_secrets.json'
 
 GOOGLE_OAUTH2_STORAGE_MODEL = {
     'model': 'sheetoutput.models.CredentialsModel',
