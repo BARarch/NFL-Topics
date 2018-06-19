@@ -30,7 +30,7 @@ def authorize(request):
 	print(request.user)
 	print(type(request.user))
 
-	storage = DjangoORMStorage(	CredetialsModel, 
+	storage = DjangoORMStorage( CredetialsModel, 
 								'user_id', 
 								request.user, 
 								'credential')
@@ -69,4 +69,72 @@ def auth_return(request):
 	storage.put(cred)
 	print('credential done: check admin')
 	return HttpResponseRedirect("/auth")
+
+def get_the_user(request):
+	storage = get_storage_for_super()
+
+	print('got storage object...')
+	cred = storage.get()
+
+	# Is it the right one?
+	if cred is None:
+		print('bad object')
+		return render(request, 'sheetoutput/message.html', {'outcome': 'the object was bad, there is no cred for this user'})
+
+	elif cred.invalid == True:
+		print('cred is invalid')
+		return render(request, 'sheetoutput/message.html', {'outcome': 'the credential was valid'})
+	else:
+		print('it worked')
+		return render(request, 'sheetoutput/message.html', {'outcome': 'it worked, this is the right user and the cred is valid'})
+
+def reach_out_and_touch(request):
+	storage = get_storage_for_super()
+
+	print('got storage object...')
+	cred = storage.get()
+
+	if cred is None:
+		print('bad object')
+		return render(request, 'sheetoutput/message.html', {'outcome': 'the object was bad, there is no cred for this user'})
+
+	elif cred.invalid == True:
+		print('cred is invalid')
+		return render(request, 'sheetoutput/message.html', {'outcome': 'the credential was not valid'})
+	
+	print('it worked')
+
+
+	http = cred.authorize(httplib2.Http())
+	discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?'
+					'version=v4')
+	service = build('sheets', 
+					'v4', 
+					http=http,
+					discoveryServiceUrl=discoveryUrl)
+
+	spreadsheet_id = '1XiOZWw3S__3l20Fo0LzpMmnro9NYDulJtMko09KsZJQ'
+	value_input_option = 'RAW'
+	rangeName = 'DjangoTest!A' + '1'
+	values = [['hello world from django view']]
+	body = {
+		  'values': values
+	}
+	
+	result = service.spreadsheets().values().update(spreadsheetId=spreadsheet_id, range=rangeName,
+													valueInputOption=value_input_option, body=body).execute()
+
+
+	return render(request, 'sheetoutput/message.html', {'outcome': 'it worked, this is the right user and the cred is valid the sheet has been touched'})
+
+
+def get_storage_for_super():
+	return DjangoORMStorage(    CredetialsModel, 
+								'user_id', 
+								1, 
+								'credential')
+
+
+
+
 	

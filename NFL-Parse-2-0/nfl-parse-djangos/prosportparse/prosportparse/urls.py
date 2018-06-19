@@ -20,5 +20,7 @@ from django.urls import path, re_path
 urlpatterns = [
     path('admin/', admin.site.urls),
     re_path(r'^oath2callback$', views.auth_return, name='callback'),
-    re_path(r'^auth', views.authorize, name='authorize')
+    re_path(r'^auth', views.authorize, name='authorize'),
+    re_path(r'^test', views.get_the_user, name='test'),
+    re_path(r'^touch', views.reach_out_and_touch, name='touch')
 ]

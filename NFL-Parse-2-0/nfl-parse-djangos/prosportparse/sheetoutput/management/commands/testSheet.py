@@ -1,5 +1,7 @@
+import httplib2
 from django.conf import settings
 
+from googleapiclient.discovery import build
 from django.core.management.base import BaseCommand, CommandError
 from parsebot.models import Article
 from sheetoutput.models import CredetialsModel
@@ -16,34 +18,46 @@ class Command(BaseCommand):
 		pass
 
 	def handle(self, *args, **options):
-		print('from Test Sheet Management Command')
+		storage = get_storage_for_super()
 
-		SCOPES = 'https://www.googleapis.com/auth/spreadsheets'
-		CLIENT_SECRET_FILE = settings.GOOGLE_OAUTH2_CLIENT_SECRETS_JSON
-		APPLICATION_NAME = 'ParseBot-SheetOutput'
-
-		flow = flow_from_clientsecrets(CLIENT_SECRET_FILE, scope=SCOPES, redirect_uri='http://localhost:8080/oath2callback')
-		print('got flow')
-
-		storage = DjangoORMStorage(	CredetialsModel, 
-									'user_id', 
-									0, 
-									'credential')
-		print('got storage object')
-
+		print('got storage object...')
 		cred = storage.get()
-		print(cred)
-		print(storage)
 
-		if cred is None or credential.invalid == True:
-			flow.params['state'] = xsrfutil.generate_token(settings.SECRET_KEY,
-															0)
-			print('we have not valid credential stored')
-			print('we are using flow to generate token')
-			print(flow.params)
-			authorize_url = flow.step1_get_authorize_url()
-			print('authorize_url: {}'.format(str(authorize_url)))
-			## If the flow is bad we might have to go to Google developers console
-			## and get a new server to server secret for this django.
-		else:
-			print('Now to authorize credential with HTTPlib2')
+		if cred is None:
+			print('bad object')
+			
+		elif cred.invalid == True:
+			print('cred is invalid')
+		else:	
+			print('cred is valid...')
+
+
+			http = cred.authorize(httplib2.Http())
+			discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?'
+							'version=v4')
+			service = build('sheets', 
+							'v4', 
+							http=http,
+							discoveryServiceUrl=discoveryUrl)
+
+			spreadsheet_id = '1XiOZWw3S__3l20Fo0LzpMmnro9NYDulJtMko09KsZJQ'
+			value_input_option = 'RAW'
+			rangeName = 'DjangoTest!A' + '4'
+			values = [['hello world from django management command server off']]
+			body = {
+				  'values': values
+			}
+			
+			result = service.spreadsheets().values().update(spreadsheetId=spreadsheet_id, range=rangeName,
+															valueInputOption=value_input_option, body=body).execute()
+			print('DONE')
+
+		return 
+
+
+
+def get_storage_for_super():
+	return DjangoORMStorage(    CredetialsModel, 
+								'user_id', 
+								1, 
+								'credential')
