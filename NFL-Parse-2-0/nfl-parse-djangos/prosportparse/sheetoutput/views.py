@@ -20,6 +20,7 @@ import google_auth_oauthlib.flow
 SCOPES = 'https://www.googleapis.com/auth/spreadsheets'
 CLIENT_SECRET_FILE = settings.GOOGLE_OAUTH2_CLIENT_SECRETS_JSON
 APPLICATION_NAME = 'ParseBot-SheetOutput'
+SESSION = {}  ## for credentials and state
 
 @login_required
 def authorize(request):
