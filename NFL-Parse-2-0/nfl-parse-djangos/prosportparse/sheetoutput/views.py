@@ -25,7 +25,11 @@ REDIRECT_URI = 'http://localhost:8080/oath2callback'
 
 SESSION = {}  ## for credentials and state
 
-#STORAGE = get_storage_for_owner()
+STORAGE = DjangoORMStorage(    CredetialsModel, 
+								'user_id', 
+								1, 
+								'credential')
+
 
 
 
@@ -49,15 +53,16 @@ def auth_return(request):
 										 scopes=[SCOPES],
 										 state=state)
 	flow.redirect_uri = REDIRECT_URI
-	print(list(request.GET.items()))
-	print('this is my state: {}'.format(state))
-	print('this is the url: {}'.format(request.build_absolute_uri()))
+	
+	#print(list(request.GET.items()))
 
 	responseWithCode = request.build_absolute_uri()
 	flow.fetch_token(authorization_response=responseWithCode)
 	credentials = flow.credentials
 	SESSION['credentials'] = credentials_to_dict(credentials)
+	
 	print(SESSION['credentials'])
+	STORAGE.put(credentials)
 	return
 
 @login_required
@@ -66,6 +71,10 @@ def refresh_token(request):
 
 @login_required
 def check_token(request):
+	print('Checking for the owners token...')
+	cred = STORAGE.get()
+
+	print(credentials_to_dict(cred))
 	return
 
 def get_storage_for_owner():
