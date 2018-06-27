@@ -11,23 +11,53 @@ from django.shortcuts import render
 from django.conf import settings
 
 from sheetoutput.models import CredetialsModel
+from oauth2client.contrib.django_util.storage import DjangoORMStorage
 
 
 import google.oauth2.credentials
-import google_auth_oauthlib.flow
+from google_auth_oauthlib.flow import Flow
 
 
 SCOPES = 'https://www.googleapis.com/auth/spreadsheets'
 CLIENT_SECRET_FILE = settings.GOOGLE_OAUTH2_CLIENT_SECRETS_JSON
 APPLICATION_NAME = 'ParseBot-SheetOutput'
+REDIRECT_URI = 'http://localhost:8080/oath2callback'
+
 SESSION = {}  ## for credentials and state
+
+#STORAGE = get_storage_for_owner()
+
+
 
 @login_required
 def authorize(request):
-	return
+	# Flow
+	flow = Flow.from_client_secrets_file(CLIENT_SECRET_FILE,
+										 scopes=[SCOPES])
+	flow.redirect_uri = REDIRECT_URI
+	authorization_url, state = flow.authorization_url(access_type='offline',
+													  prompt='consent',
+													  include_granted_scopes='true')
+	SESSION['state'] = state
+	print(list(request.GET.items()))
+	return HttpResponseRedirect(authorization_url)
 
 @login_required
 def auth_return(request):
+	state = SESSION['state']
+	flow = Flow.from_client_secrets_file(CLIENT_SECRET_FILE,
+										 scopes=[SCOPES],
+										 state=state)
+	flow.redirect_uri = REDIRECT_URI
+	print(list(request.GET.items()))
+	print('this is my state: {}'.format(state))
+	print('this is the url: {}'.format(request.build_absolute_uri()))
+
+	responseWithCode = request.build_absolute_uri()
+	flow.fetch_token(authorization_response=responseWithCode)
+	credentials = flow.credentials
+	SESSION['credentials'] = credentials_to_dict(credentials)
+	print(SESSION['credentials'])
 	return
 
 @login_required
@@ -37,6 +67,20 @@ def refresh_token(request):
 @login_required
 def check_token(request):
 	return
+
+def get_storage_for_owner():
+	return DjangoORMStorage(    CredetialsModel, 
+								'user_id', 
+								1, 
+								'credential')
+
+def credentials_to_dict(credentials):
+	return {'token': credentials.token,
+			'refresh_token': credentials.refresh_token,
+			'token_uri': credentials.token_uri,
+			'client_id': credentials.client_id,
+			'client_secret': credentials.client_secret,
+			'scopes': credentials.scopes}
 
 
 

@@ -4,6 +4,7 @@ import sys
 
 if __name__ == "__main__":
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "prosportparse.settings")
+    os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
