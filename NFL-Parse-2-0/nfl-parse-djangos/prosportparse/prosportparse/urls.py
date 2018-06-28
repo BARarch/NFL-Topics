@@ -22,5 +22,6 @@ urlpatterns = [
     re_path(r'^oath2callback$', views.auth_return, name='callback'),
     re_path(r'^auth', views.authorize, name='authorize'),
     re_path(r'^refresh', views.refresh_token, name='authorize'),
+    re_path(r'touch', views.touch, name='touch'),
     re_path(r'^check', views.check_token, name='authorize')
 ]

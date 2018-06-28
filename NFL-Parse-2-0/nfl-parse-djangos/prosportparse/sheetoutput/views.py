@@ -15,6 +15,9 @@ from oauth2client.contrib.django_util.storage import DjangoORMStorage
 
 
 import google.oauth2.credentials
+import google.auth.transport.requests
+import requests
+
 from google_auth_oauthlib.flow import Flow
 
 
@@ -67,15 +70,36 @@ def auth_return(request):
 
 @login_required
 def refresh_token(request):
-	return
+	
+	cred = force_refresh()
+
+	return render(request, 'sheetoutput/message.html', {'outcome': 'the token has been refeshed and is valid until {}'.format(str(credentials_to_dict(cred)['expiry']))})
 
 @login_required
 def check_token(request):
 	print('Checking for the owners token...')
 	cred = STORAGE.get()
 
-	print(credentials_to_dict(cred))
-	return
+	print(dict_to_string(credentials_to_dict(cred)))
+
+	if cred.expired == True:
+		return HttpResponseRedirect('/refresh')
+	else:
+		return render(request, 'sheetoutput/message.html', {'outcome': 'the token we have is valid until {}'.format(str(credentials_to_dict(cred)['expiry']))})
+
+@login_required
+def touch(request):
+	cred = STORAGE.get()
+
+	if cred is None:
+		print('No Credentials for sheetoutput')
+		return render(request, 'sheetoutput/message.html', {'outcome': 'No Credentials, please authenticate parsebot sheetoutput!'})
+	if cred.expired == True:
+		cred = force_refresh()
+
+	http = cred.authorize(httplib2.Http())
+	print('TOUCH complete')
+	return render(request, 'sheetoutput/message.html', {'outcome': 'The call to the google sheet has completed!'})
 
 def get_storage_for_owner():
 	return DjangoORMStorage(    CredetialsModel, 
@@ -86,12 +110,28 @@ def get_storage_for_owner():
 def credentials_to_dict(credentials):
 	return {'token': credentials.token,
 			'refresh_token': credentials.refresh_token,
+			'expiry': credentials.expiry,
+			'expired': credentials.expired,
 			'token_uri': credentials.token_uri,
 			'client_id': credentials.client_id,
 			'client_secret': credentials.client_secret,
 			'scopes': credentials.scopes}
 
+def dict_to_string(dictt):
+	return 'Creds {\n' + '\n'.join(["\t'{}': {},".format(str(item), str(dictt[item])) for item in dictt]) + '\n}'
 
+def force_refresh():
+	## Force Refresh for token with Google transport HTTP object
+	cred = STORAGE.get()
+	print('refreshing token...')
+	print(dict_to_string(credentials_to_dict(cred)))
+
+	requestt = google.auth.transport.requests.Request()
+	cred.refresh(requestt)
+
+	STORAGE.put(cred)
+
+	return cred
 
 
 	
