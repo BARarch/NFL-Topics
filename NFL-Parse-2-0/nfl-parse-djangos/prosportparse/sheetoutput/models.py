@@ -14,3 +14,7 @@ class CredetialsModel(models.Model):
 
 class FlowModel(models.Model):
 	flow = FlowField()
+
+class SheetModel(models.Model):
+	sheetID = models.CharField(max_length=400)
+	name = models.CharField(max_length=120)

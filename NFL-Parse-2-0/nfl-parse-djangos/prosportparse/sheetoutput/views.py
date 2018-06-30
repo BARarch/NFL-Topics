@@ -106,8 +106,8 @@ def touch(request):
 
 	spreadsheet_id = '1XiOZWw3S__3l20Fo0LzpMmnro9NYDulJtMko09KsZJQ'
 	value_input_option = 'RAW'
-	rangeName = 'DjangoTest!C' + '1'
-	values = [['hello world from django view with google auth']]
+	rangeName = 'DjangoTest!C' + '3'
+	values = [['hello world from django view with google auth auto refresh']]
 	body = {
 		  'values': values
 	}
@@ -130,8 +130,6 @@ def credentials_to_dict(credentials):
 			'expiry': credentials.expiry,
 			'expired': credentials.expired,
 			'token_uri': credentials.token_uri,
-			'client_id': credentials.client_id,
-			'client_secret': credentials.client_secret,
 			'scopes': credentials.scopes}
 
 def dict_to_string(dictt):
