@@ -7,7 +7,7 @@ from sheetoutput.sheetoutput_classes.modelGS import SheetOutput
 
 
 class Command(BaseCommand):
-	help = 'Pulls feeds from in the group assigned to the app'
+	help = 'Says Hello from the ParseBot'
 
 	def add_arguments(self, parser):
 		pass
@@ -16,4 +16,3 @@ class Command(BaseCommand):
 		s = SheetOutput()
 		s.say_hello()
 		print('DONE: check sheet')
-		
