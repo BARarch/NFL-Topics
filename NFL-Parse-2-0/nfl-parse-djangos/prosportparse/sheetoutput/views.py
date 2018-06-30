@@ -36,7 +36,7 @@ STORAGE = DjangoORMStorage(    CredetialsModel,
 
 
 
-@login_required
+#@login_required
 def authorize(request):
 	# Flow
 	flow = Flow.from_client_secrets_file(CLIENT_SECRET_FILE,
@@ -49,7 +49,7 @@ def authorize(request):
 	print(list(request.GET.items()))
 	return HttpResponseRedirect(authorization_url)
 
-@login_required
+#@login_required
 def auth_return(request):
 	state = SESSION['state']
 	flow = Flow.from_client_secrets_file(CLIENT_SECRET_FILE,
@@ -68,14 +68,14 @@ def auth_return(request):
 	STORAGE.put(credentials)
 	return
 
-@login_required
+#@login_required
 def refresh_token(request):
 	
 	cred = force_refresh()
 
 	return render(request, 'sheetoutput/message.html', {'outcome': 'the token has been refeshed and is valid until {}'.format(str(credentials_to_dict(cred)['expiry']))})
 
-@login_required
+#@login_required
 def check_token(request):
 	print('Checking for the owners token...')
 	cred = STORAGE.get()
@@ -87,7 +87,7 @@ def check_token(request):
 	else:
 		return render(request, 'sheetoutput/message.html', {'outcome': 'the token we have is valid until {}'.format(str(credentials_to_dict(cred)['expiry']))})
 
-@login_required
+#@login_required
 def touch(request):
 	cred = STORAGE.get()
 
@@ -97,7 +97,24 @@ def touch(request):
 	if cred.expired == True:
 		cred = force_refresh()
 
-	http = cred.authorize(httplib2.Http())
+	discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?'
+					'version=v4')
+	service = build('sheets', 
+					'v4', 
+					credentials=cred,
+					discoveryServiceUrl=discoveryUrl)
+
+	spreadsheet_id = '1XiOZWw3S__3l20Fo0LzpMmnro9NYDulJtMko09KsZJQ'
+	value_input_option = 'RAW'
+	rangeName = 'DjangoTest!C' + '1'
+	values = [['hello world from django view with google auth']]
+	body = {
+		  'values': values
+	}
+	
+	result = service.spreadsheets().values().update(spreadsheetId=spreadsheet_id, range=rangeName,
+													valueInputOption=value_input_option, body=body).execute()
+
 	print('TOUCH complete')
 	return render(request, 'sheetoutput/message.html', {'outcome': 'The call to the google sheet has completed!'})
 
