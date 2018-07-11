@@ -27,7 +27,7 @@ class SheetOutput:
 
 		spreadsheet_id = SheetOutput.SheetUrl
 		value_input_option = 'RAW'
-		rangeName = 'DjangoTest!E' + '1'
+		rangeName = 'DjangoTest!E' + '2'
 		values = [['hello world from django sheetoutput class and parsebot Management']]
 		body = {
 			  'values': values
