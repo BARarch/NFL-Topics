@@ -36,16 +36,83 @@ class SheetOutput:
 		result = service.spreadsheets().values().update(spreadsheetId=spreadsheet_id, range=rangeName,
 														valueInputOption=value_input_option, body=body).execute()
 
+	def get_rows(rangeString):
+		pass
+
+	def output_row(rangeString, row):
+		pass
+
+	def output_rows(rangeString, rows):
+		pass
+
+	def range_string(sheet, colunm, row):
+		return '{}!{}{}'.format(str(sheet), str(colunm), str(row))
+
+	def sheet_range(rangeString):
+		delim = rangeString.find('!')
+		sheet = rangeString[:delim]
+		colunm = rangeString[delim + 1]
+		row = rangeString[delim + 2:]
+
+
+	def get_current_row(sheet):
+		pass
+
+	def set_current_row(sheet):
+		pass
+
+
+
 
 
 class FeedList(SheetOutput):
-	pass
+	def __init__(self):
+		pass
+
+	def get_current_row():
+		pass
+
+	def set_current_row():
+		pass
+
+	def range_string():
+		pass
 
 class ExceptionList(SheetOutput):
-	pass
+	def __init__(self):
+		pass
+
+	def get_current_row():
+		pass
+
+	def set_current_row():
+		pass
+
+	def range_string():
+		pass
 
 class RunsList(SheetOutput):
-	pass
+	def __init__(self):
+		pass
+
+	def get_current_row():
+		pass
+
+	def set_current_row():
+		pass
+
+	def range_string():
+		pass
 
 class FeedOutput(SheetOutput):
-	pass
+	def __init__(self):
+		pass
+
+	def get_current_row():
+		pass
+
+	def set_current_row():
+		pass
+
+	def range_string():
+		pass
