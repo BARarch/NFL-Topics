@@ -35,17 +35,65 @@ class SheetOutput:
 		
 		result = service.spreadsheets().values().update(spreadsheetId=spreadsheet_id, range=rangeName,
 														valueInputOption=value_input_option, body=body).execute()
+		return result
 
-	def get_rows(rangeString):
+	def get_rows(self, rangeString):
 		pass
 
-	def output_row(rangeString, row):
+	def output_row(self, row, rangeString):
+		"""Google Sheets API Code.  Sends output to current row
+		"""
+		service = build('sheets', 
+						'v4', 
+						credentials=SheetOutput.cred.get_cred(),
+						discoveryServiceUrl=SheetOutput.discoveryUrl)
+
+		value_input_option = 'RAW'
+		
+		values = [row]
+		body = {
+			  'values': values
+		}
+
+
+		try:
+			result = service.spreadsheets().values().update(spreadsheetId=SheetOutput.SheetUrl, range=rangeString,
+														valueInputOption=value_input_option, body=body).execute()
+		except:
+			print('Missed Row Output')
+		else:
+			pass
+			
+		return result
 		pass
 
-	def output_rows(rangeString, rows):
-		pass
+	def output_rows(self, rows, rangeString):
+		"""Google Sheets API Code.
+		"""
+		service = build('sheets', 
+						'v4', 
+						credentials=SheetOutput.cred.get_cred(),
+						discoveryServiceUrl=SheetOutput.discoveryUrl)
 
-	def range_string(sheet, colunm, row):
+		value_input_option = 'RAW'
+		
+		values = rows
+		body = {
+			  'values': values
+		}
+
+		try:
+			result = service.spreadsheets().values().update(spreadsheetId=SheetOutput.SheetUrl, range=rangeString,
+														valueInputOption=value_input_option, body=body).execute()
+		except:
+			print('Missed Row Output')
+		else:
+			pass
+			
+		return result
+		
+
+	def range_string(self, sheet, colunm, row):
 		return '{}!{}{}'.format(str(sheet), str(colunm), str(row))
 
 	def sheet_range(rangeString):
@@ -55,11 +103,9 @@ class SheetOutput:
 		row = rangeString[delim + 2:]
 
 
-	def get_current_row(sheet):
+	def get_current_row(self, sheet):
 		pass
 
-	def set_current_row(sheet):
-		pass
 
 
 
