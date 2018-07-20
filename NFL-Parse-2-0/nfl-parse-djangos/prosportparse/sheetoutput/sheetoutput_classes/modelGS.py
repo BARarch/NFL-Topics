@@ -37,8 +37,20 @@ class SheetOutput:
 														valueInputOption=value_input_option, body=body).execute()
 		return result
 
-	def get_rows(self, rangeString):
-		pass
+	def get_rows(self, rangeStringGet):
+
+		service = build('sheets', 
+						'v4', 
+						credentials=SheetOutput.cred.get_cred(),
+						discoveryServiceUrl=SheetOutput.discoveryUrl)
+
+		spreadsheet_id = SheetOutput.SheetUrl
+		rangeName = rangeStringGet
+		result = service.spreadsheets().values().get(
+			spreadsheetId=spreadsheetId, range=rangeName).execute()
+		values = result.get('values', [])
+
+		return values
 
 	def output_row(self, row, rangeString):
 		"""Google Sheets API Code.  Sends output to current row
@@ -92,9 +104,14 @@ class SheetOutput:
 			
 		return result
 		
-
-	def range_string(self, sheet, colunm, row):
+	@classmethod
+	def range_string(cls, sheet, colunm, row):
 		return '{}!{}{}'.format(str(sheet), str(colunm), str(row))
+
+	@classmethod
+	def range_string_get(cls, sheet, stopColunm):
+		return '{}!A2:{}'.format(sheet, stopColunm)
+
 
 	def sheet_range(rangeString):
 		delim = rangeString.find('!')
@@ -104,7 +121,7 @@ class SheetOutput:
 
 
 	def get_current_row(self, sheet):
-		pass
+		return len(self.get_rows(SheetOutput.range_string_get(sheet, 'B'))) + 2
 
 
 
