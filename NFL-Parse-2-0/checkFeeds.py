@@ -94,7 +94,31 @@ def writeFeedCheckStatus(row, status):
 
     return result
 
+def writeFeedCheckStatusColumns(column):
+    """Google Sheets API Code.
 
+    Writes all team news link data from RSS feed to the NFL Team Articles speadsheet.
+    https://docs.google.com/spreadsheets/d/1XiOZWw3S__3l20Fo0LzpMmnro9NYDulJtMko09KsZJQ/edit#gid=0
+    """
+    credentials = get_credentials()
+    http = credentials.authorize(mgs.httplib2.Http())
+    discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?'
+                    'version=v4')
+    service = mgs.discovery.build('sheets', 'v4', http=http,
+                              discoveryServiceUrl=discoveryUrl)
+
+    spreadsheet_id = '1XiOZWw3S__3l20Fo0LzpMmnro9NYDulJtMko09KsZJQ'
+    value_input_option = 'RAW'
+    rangeName = 'RSS LIST!F2'
+    values = column
+    body = {
+          'values': values
+    }
+    
+    result = service.spreadsheets().values().update(spreadsheetId=spreadsheet_id, range=rangeName,
+                                                    valueInputOption=value_input_option, body=body).execute()
+
+    return result
 
 
 def get_runs():
@@ -389,22 +413,28 @@ if __name__ == '__main__':
 
         # Step 2 Pull all feeds from RSS Lins Using feedFrame()
         data = []
+        statusCol = []
         for feedRow in feeds:
             if feedRow[3] == 'null':
                 continue
             try:
                 data.extend(feedFrame2(feedRow, cursor))
             except Exception as e:
-                print('FeedFrame error with {} {} on row {}: {}'.format(feedRow[1], feedRow[2], feedRow[0], e))
-                writeFeedCheckStatus(int(feedRow[0]), 'CHECK LINK')
+                statusError = 'FeedFrame error with {} {} on row {}: {}'.format(feedRow[1], feedRow[2], feedRow[0], e)
+                print(statusError)
+                statusCol.append(['CHECK LINK:' + statusError])
+                #print('FeedFrame error with {} {} on row {}: {}'.format(feedRow[1], feedRow[2], feedRow[0], e))
+                #writeFeedCheckStatus(int(feedRow[0]), 'CHECK LINK')
             #print('team: '+ feedRow[1] + ' ' + feedRow[0] )
             else:
-                writeFeedCheckStatus(int(feedRow[0]), 'GOOD')
+                statusCol.append(['GOOD'])
+                #writeFeedCheckStatus(int(feedRow[0]), 'GOOD')
 
 
         # Step 3 Sort the Data by pubData push to Postgress and DataFrame the result    
         dataSorts = sorted(data, key=lambda k: getTime(k['pubDate']), reverse=True)
         noNewArticles = pushRecord2(dataSorts, cursor, conn)
+        writeFeedCheckStatusColumns(statusCol)
 
         cursor.close()
         conn.close()
